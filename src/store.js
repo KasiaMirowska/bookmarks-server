@@ -1,4 +1,4 @@
-const bookmarks = [
+let bookmarks = [
     {
         id: 1,
         title: 'Cody',
