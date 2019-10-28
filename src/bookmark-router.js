@@ -1,7 +1,7 @@
 const express = require('express');
 const uuid = require('uuid/v4');
 const logger = require('./logger');
-const { bookmarks } = require('./store');
+let { bookmarks } = require('./store');
 const validUrl = require('valid-url');
 const bookmarkRouter = express.Router();
 const bodyParser = express.json();
@@ -15,28 +15,28 @@ bookmarkRouter
         const { title, url, description='', rating } = req.body;
         if(!title) {
             logger.error('Title is required')
-            res.send('Invalid data')
+            return res.json('Invalid data')
         }
         if(!url){
             logger.error('url is required')
-            res.send('Invalid data');
+            return res.json('Invalid data');
         }
         if(!rating) {
             logger.error('rating is required')
-            res.send('Invalid data');
+            return res.json('Invalid data');
         }
         
         if(!validUrl.isUri(url)){
            logger.error('not a valid URL');
-           res.send('Not a valid URL')
+           return res.json('Not a valid URL')
         }
         if(typeof rating !== 'number') {
             logger.error('rating must be a number');
-            res.send('Invalid data')
+            return res.json('Invalid data')
         }
         if(rating < 1 || rating > 5) {
             logger.error('rating must be a number between 1 and 5');
-            res.send('Rating must be a number between 1 and 5')
+            return res.json('Rating must be a number between 1 and 5')
         } 
         
         const id = uuid();
@@ -52,11 +52,8 @@ bookmarkRouter
         res
             .status(201)
             .location(`'http://localhost:8000/bookmarks/${id}`)
-            .json(bookmarks)
+            .json(bookmark)
      })
-
-    
-
 
 
 bookmarkRouter
@@ -67,23 +64,21 @@ bookmarkRouter
 
         if(!bookmark) {
             logger.error(`bookmark with id ${id} not found`);
-            res.status(404).send('Not found')
+            res.status(404).json('Not found')
         }
         res.json(bookmark);
     })
     .delete((req, res) => {
         const { id } = req.params;
         let deletedItem = bookmarks.find(b => b.id == id);
-        console.log('HERE!')
+       
         if(!deletedItem) {
-            console.log('HERE, here')
             logger.error(`bookmark with id ${id} not found`)
-            res.status(404).send('not found')
+            res.status(404).json('not found')
         }
         
-        const shorterList = bookmarks.filter(b => b.id !== id)
-        bookmarks = shorterList;
-        console.log(bookmarks)
+        bookmarks = bookmarks.filter(b => b.id !== id)
+        
         logger.info(`bookmark with id ${id} deleted`);
         res.status(200).json(bookmarks);
     })
