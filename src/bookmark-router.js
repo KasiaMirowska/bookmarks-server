@@ -70,17 +70,20 @@ bookmarkRouter
     })
     .delete((req, res) => {
         const { id } = req.params;
-        let deletedItem = bookmarks.find(b => b.id == id);
+        let deletedItem = bookmarks.find(b => b.id == Number(id));
        
         if(!deletedItem) {
             logger.error(`bookmark with id ${id} not found`)
             res.status(404).json('not found')
         }
         
-        bookmarks = bookmarks.filter(b => b.id !== id)
-        
+        shorterList = bookmarks.filter(b => {
+            return b.id !== Number(id)
+        })
+        console.log(shorterList);
+        bookmarks = shorterList;
         logger.info(`bookmark with id ${id} deleted`);
-        res.status(200).json(bookmarks);
+        res.status(204).end();
     })
 
 module.exports = bookmarkRouter;
