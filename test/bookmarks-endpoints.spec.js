@@ -20,6 +20,14 @@ describe('Bookmarks endpoints', function() {
     afterEach('cleanup', () => db('bookmarks_t').truncate());
 
     describe('GET bookmarks', () => {
+        context('Given there are no bookmarks', () => {
+            it('responds with 200 and an empty list', () => {
+                return supertest(app)
+                    .get('/bookmarks')
+                    .expect(200, [])
+            })
+        })
+        
         context('Given there are bookmarks in db', () => {
             const testBookmarks = CreateTestData();
     
@@ -34,17 +42,19 @@ describe('Bookmarks endpoints', function() {
                     .expect(200, testBookmarks)
             })
         })
-        context('Given htere are no bookmarks', () => {
-            it('responds with 200 and an empty list', () => {
-                return supertest(app)
-                    .get('/bookmarks')
-                    .expect(200, [])
-            })
-        })
         
     })
 
     describe('GET//bookmarks/:id', () => {
+        context('Given no bookmarks', () => {
+            it('responds with 404', () => {
+                const chosenId = 2
+                return supertest(app)
+                    .get(`/bookmarks/:${chosenId}`)
+                    .expect(404, {error: {message: "Bookmark doesn't exist"}})
+            })
+        })
+        
         context('Given there are bookmarks in db', () => {
             const testBookmarks = CreateTestData();
     
@@ -60,9 +70,6 @@ describe('Bookmarks endpoints', function() {
                     .get(`/bookmarks/:${chosenId}`)
                     .expect(200, expectedBookmark)
             })
-        })
-        
+        })  
     })
-    
-    
 })

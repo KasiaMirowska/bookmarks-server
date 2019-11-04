@@ -3,7 +3,7 @@ const BookmarksServices = {
         return knex.select('*').from('bookmarks_t')
     },
     getById(knex, chosenId) {
-        return knex.from('bookmarks_t').select('*').where({'id' : id}).first()
+        return knex.from('bookmarks_t').select('*').where({'id' : chosenId}).first()
     }
 }
 module.exports = BookmarksServices;
