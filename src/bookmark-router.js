@@ -71,7 +71,7 @@ bookmarkRouter
             .then(bookmark => {
                 if(!bookmark) {
                     logger.error(`bookmark with id ${id} not found`);
-                    res.status(404).json('Not found')
+                    res.status(404).send({error: {message: "Bookmark doesn't exist"}})
                 }
                 res.json(bookmark);
             })

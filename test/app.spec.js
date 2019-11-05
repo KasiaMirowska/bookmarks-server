@@ -5,6 +5,7 @@ describe('app', () => {
     it('GET / responds with 200 containing "Hello from bookmarks!"', () => {
         return supertest(app)
             .get('/')
+            .set('Authorization',`Bearer ${process.env.API_TOKEN}`)
             .expect(200, "Hello from bookmarks!")
     })
 })

@@ -20,10 +20,10 @@ app.use(function validateBearerToken(req,res,next) {
 
     if(!authToken || authToken.split(' ')[1] !== apiToken) {
         logger.error(`Unauthorized request to path: ${req.path}`)
-        console.log(authToken.split(' ')[1], 'AUTH', apiToken, 'API')
+        // console.log(authToken.split(' ')[1], 'AUTH', apiToken, 'API')
         return res.status(401).json({error: 'Unathorized request'})
     };
-    console.log(authToken.split(' ')[1], 'AUTH', apiToken, 'API')
+    // console.log(authToken.split(' ')[1], 'AUTH', apiToken, 'API')
     next();
 })
 
