@@ -6,6 +6,7 @@ const bodyParser = express.json();
 const BookmarksServices = require('./bookmarks-services');
 const app = require('./app');
 const xss = require('xss');
+const path = require('path');
 
 
 const serializeBookmark = (bookmark) => ({
@@ -16,7 +17,7 @@ const serializeBookmark = (bookmark) => ({
     rating: Number(bookmark.rating),
 })
 bookmarkRouter
-    .route('/bookmarks')
+    .route('/api/bookmarks')
     .get((req, res, next) => {
         const knexInstance = req.app.get('db');
         BookmarksServices.getAllBookmarks(knexInstance)
@@ -48,14 +49,14 @@ bookmarkRouter
             logger.error('rating must be a number between 1 and 5');
             return res.status(400).json('Rating must be a number between 1 and 5')
         }
-        
+
         BookmarksServices.insertNewBookmark(knexInstance, newBookmark)
             .then(bookmark => {
+                console.log("HEREHEREEHRERERERERE")
                 logger.info(`bookmark with id ${bookmark.id} created`)
                 res
                     .status(201)
-
-                    .location(`/bookmarks/${bookmark.id}`)
+                    .location(path.posix.join(req.originalUrl+ `/${bookmark.id}`))
                     .json(serializeBookmark(bookmark))
             })
             .catch(next)
@@ -64,7 +65,7 @@ bookmarkRouter
 
 
 bookmarkRouter
-    .route('/bookmarks/:id')
+    .route('/api/bookmarks/:id')
     .all((req,res,next) => {
         const knexInstance = req.app.get('db');
         const { id } = req.params;
@@ -72,7 +73,7 @@ bookmarkRouter
             .then(bookmark => {
                 if (!bookmark) {
                     logger.error(`bookmark with id ${id} not found`);
-                    return res.status(404).send({ error: { message: "Bookmark doesn't exist" } });
+                    return res.status(404).send({ error: { message: `Bookmark ${id} doesn't exist` } });
                 }
                 res.bookmark = bookmark;
                 next()
@@ -82,9 +83,10 @@ bookmarkRouter
     .get((req,res,next) => {
         res.json(serializeBookmark(res.bookmark))
     })
-    .delete((req, res) => {
+    .delete((req, res, next) => {
         const knexInstance = req.app.get('db');
         const { id } = req.params;
+        
         BookmarksServices.deleteBookmark(knexInstance, id)
             .then(() => {
                 logger.info(`Bookmark with ${id} deleted`)
