@@ -207,4 +207,57 @@ describe('Bookmarks endpoints', function () {
             })
         })
     })
+
+    describe('PATCH bookmark', () => {
+        context('no bookmarks in db', () => {
+            it('returns 404 error', () => {
+                const idToUpdate = 3;
+                const updatedBookmark = {
+                    title: 'updated title',
+                    url: 'https://courses.thinkful.com/node-postgres-v1/checkpoint/17',
+                    description: 'updated content',
+                    rating: 3
+            }
+                return supertest(app)
+                    .patch(`/api/bookmarks/${idToUpdate}`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .expect(404, {error: {message: `Bookmark ${idToUpdate} doesn't exist`}})
+            })
+        })
+        context('given bookmarks in db', () => {
+            const testBookmarks = CreateTestData();
+            before('insert bookmarks', () => {
+                return db
+                    .into('bookmarks_t')
+                    .insert(testBookmarks)
+            })
+            it('returns 204 and updates the selected bookmark', () => {
+                const idToUpdate = 3;
+                const updatedBookmark = {
+                    title: 'updated title',
+                    url: 'https://courses.thinkful.com/node-postgres-v1/checkpoint/17',
+                    description: 'updated content',
+                    rating: 3
+                };
+                const expectedBookmarks = {
+                    ...testBookmarks[idToUpdate - 1],
+                    ...updatedBookmark
+                };
+                return supertest(app)
+                    .patch(`/api/bookmarks/${idToUpdate}`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .send({
+                        ...updatedBookmark,
+                        filedToIgnore: 'should not be in GET'
+                    })
+                    .expect(204)
+                    .then(res => {
+                        supertest(app)
+                            .get('/api/bookmarks')
+                            .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                            .expect(expectedBookmarks)
+                    })
+            })
+        }) 
+    })
 })

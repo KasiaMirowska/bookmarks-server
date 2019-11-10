@@ -52,7 +52,6 @@ bookmarkRouter
 
         BookmarksServices.insertNewBookmark(knexInstance, newBookmark)
             .then(bookmark => {
-                console.log("HEREHEREEHRERERERERE")
                 logger.info(`bookmark with id ${bookmark.id} created`)
                 res
                     .status(201)
@@ -68,7 +67,8 @@ bookmarkRouter
     .route('/api/bookmarks/:id')
     .all((req,res,next) => {
         const knexInstance = req.app.get('db');
-        const { id } = req.params;
+        const id = req.params.id;
+       
         BookmarksServices.getById(knexInstance, id)
             .then(bookmark => {
                 if (!bookmark) {
@@ -85,7 +85,7 @@ bookmarkRouter
     })
     .delete((req, res, next) => {
         const knexInstance = req.app.get('db');
-        const { id } = req.params;
+        const id = req.params.id;
         
         BookmarksServices.deleteBookmark(knexInstance, id)
             .then(() => {
@@ -94,6 +94,38 @@ bookmarkRouter
             })
             .catch(next)
      })
+    .patch(bodyParser, (req, res, next) => {
+        const knexInstance = req.app.get('db');
+        const { id } = req.params;
+        const { title, url, description='', rating } = req.body;
+        const updatedBookmark = { title, url, description, rating } 
+
+        for (const [key, value] of Object.entries(updatedBookmark)) {
+            if (value == null) {
+                logger.error(`${key} is required`)
+                return res.status(400).json({ error: { message: `Missing ${key}` } })
+            }
+        }
+        if (!validUrl.isUri(url)) {
+            logger.error('not a valid URL');
+            return res.status(400).json('Not a valid URL')
+        }
+        if (typeof rating !== 'number') {
+            logger.error('rating must be a number');
+            return res.status(400).json('Invalid data')
+        }
+        if (rating < 1 || rating > 5) {
+            logger.error('rating must be a number between 1 and 5');
+            return res.status(400).json('Rating must be a number between 1 and 5')
+        }
+
+       
+        BookmarksServices.updatedBookmark(knexInstance, id, updatedBookmark)
+            .then(() => {
+                res.status(204).end()
+            })
+            .catch(next)
+    })
             
 
 module.exports = bookmarkRouter;
